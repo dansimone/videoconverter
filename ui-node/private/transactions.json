@@ -1,0 +1,80 @@
+[
+  {
+    "type": "Deposit",
+    "amount": 2000,
+    "category_id": "Deposit",
+    "comments": "Paycheck"
+  },
+  {
+    "type": "Deposit",
+    "amount": 100,
+    "category_id": "Deposit",
+    "comments": "Joe finally paid back that money I lent him"
+  },
+  {
+    "type": "Deposit",
+    "amount": 50,
+    "category_id": "Deposit",
+    "comments": "Refund on that shirt I didn't like"
+  },
+  {
+    "type": "Withdrawal",
+    "amount": -1500,
+    "category_id": "Car Insurance",
+    "comments": "Monthly payment"
+  },
+  {
+    "type": "Withdrawal",
+    "amount": -100,
+    "category_id": "Cable TV",
+    "comments": "Monthly payment"
+  },
+  {
+    "type": "Withdrawal",
+    "amount": -27.85,
+    "category_id": "Electric",
+    "comments": "Monthly payment"
+  },
+  {
+    "type": "Withdrawal",
+    "amount": -27.85,
+    "category_id": "Gasoline",
+    "comments": "Refill"
+  },
+  {
+    "type": "Withdrawal",
+    "amount": -27.85,
+    "category_id": "Gasoline",
+    "comments": "Another refill"
+  },
+  {
+    "type": "Withdrawal",
+    "amount": -37.85,
+    "category_id": "Gasoline",
+    "comments": "Yet another refill"
+  },
+  {
+    "type": "Withdrawal",
+    "amount": -45.54,
+    "category_id": "Groceries",
+    "comments": "Some snacks for movie night"
+  },
+  {
+    "type": "Withdrawal",
+    "amount": -180.55,
+    "category_id": "Groceries",
+    "comments": "Weekly groceries"
+  },
+  {
+    "type": "Withdrawal",
+    "amount": -92.53,
+    "category_id": "Groceries",
+    "comments": "Steaks for the cookout"
+  },
+  {
+    "type": "Withdrawal",
+    "amount": -88.94,
+    "category_id": "Groceries",
+    "comments": "Weekly groceries"
+  }
+]

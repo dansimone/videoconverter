@@ -1,0 +1,16 @@
+[
+  {
+    "services": {
+      "password": {
+        "bcrypt": "$2a$10$/x4zRDrFDEGnJTZaD8gwE.YZnFoWV/57FyitMJ2VGIhGR.dMVKzCi"
+      }
+    },
+    "username": "foo",
+    "emails": [
+      {
+        "address": "foo@foo.com",
+        "verified": false
+      }
+    ]
+  }
+]
