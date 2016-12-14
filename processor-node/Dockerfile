@@ -6,7 +6,7 @@ ENV HTTPS_PROXY=http://adc-proxy.oracle.com:80
 ENV http_proxy=http://adc-proxy.oracle.com:80
 
 RUN npm install express
-RUN npm install fluent-ffmpeg
+RUN npm install fluent-ffmpeg@2.0.1
 RUN npm install stream-buffers
 RUN npm install randomstring
 RUN npm install tmp

@@ -8,9 +8,6 @@ if (Meteor.isClient) {
    * Main Helpers
    */
   Template.main.helpers({
-    isLoggedIn: function () {
-      return Session.get("logged-in") != null && Session.get("logged-in");
-    },
     getErrorClass: function (fieldName) {
       return getErrorClass(fieldName);
     }
@@ -20,12 +17,6 @@ if (Meteor.isClient) {
     "click a.changepassword": function (event, template) {
       event.preventDefault();
       $("#changePasswordModal").modal("show");
-    },
-    // Clicking the Logout tab
-    'click a.logout': function () {
-      event.preventDefault();
-      Session.clear("logged-in");
-      Meteor.logout();
     },
     // Submitting the Change Password form
     'submit form.change-password': function () {
@@ -107,31 +98,6 @@ if (Meteor.isClient) {
         Session.set("formError-changepassword-newpassword", false);
         Session.set("formError-changepassword-confirmnewpassword", false);
       }
-    }
-  });
-
-  /**
-   * Sign In Helpers
-   */
-  Template.signin.events({
-    // Submitting the Login form
-    'submit form.login-form': function () {
-      event.preventDefault();
-      var signInForm = $(event.currentTarget);
-      var password = signInForm.find('.password').val();
-      Meteor.loginWithPassword("foo", password, function (error) {
-        // 3. Handle the response
-        if (Meteor.user()) {
-          Session.setPersistent("logged-in", true);
-        } else {
-          var l = 20;
-          for (var i = 0; i < 7; i++) {
-            signInForm.animate({'margin-left': "+=" + ( l = -l ) + 'px'}, 50);
-          }
-          document.getElementById('password').value = "";
-        }
-      });
-      return false;
     }
   });
 
