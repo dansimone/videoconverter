@@ -14,6 +14,34 @@ if (Meteor.isClient) {
   });
   Template.main.events({
   });
+  Template.upload.events(
+    {  // Clicking the Transaction table date column
+      'click th.sort-dates': function () {
+        var sortOrder = 1;
+        if (Session.get('txnSortField') != null && Session.get('txnSortField').date != null) {
+          sortOrder = Session.get('txnSortField').date * -1;
+        }
+        Session.set('txnSortField', {date: sortOrder});
+      },
+      // Clicking the Transaction table amount column
+      "change .myFileInput": function(event, template) {
+        var file = event.target.files[0];
+        if (!file) return;
+
+        videoId = Videos.insert({
+          name: file.name,
+          originalSize: 0, //getFileSizeString(fileObj.size()),
+          status: "PENDING",
+          percentComplete: 0
+        });
+
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', '/uploadToProcessor/' + videoId, true);
+        xhr.onload = function(event){}
+        xhr.send(file);
+      }
+    }
+  );
 
   /**
    * Pending Videos Helpers
@@ -301,8 +329,15 @@ if (Meteor.isClient) {
 // On server startup, seed some sample data, if the DB is empty.
 if (Meteor.isServer) {
   Meteor.startup(function () {
+    var http = Npm.require('http');
+    var fs = Npm.require('fs');
+    var tmp = Npm.require('tmp');
 
-    // REST API configuration
+    // Create temporary directory
+    var tmpDir = tmp.dirSync().name;
+    console.log('Created tmp dir: ' + tmpDir);
+
+    // Configuration of REST API for Processor Node callbacks
     var Api = new Restivus({
       useDefaultAuth: true,
       prettyJson: true
@@ -342,12 +377,36 @@ if (Meteor.isServer) {
         return {statusCode: 200};
         }
     });
+
+    // Internal URL to send input files from client to server
+    WebApp.connectHandlers.use('/uploadToProcessor',function(req,res){
+      var parts = req.url.split("/");
+      id = parts[1];
+      console.log('Uploading file ' + id + ' to Processor Node');
+      var start = Date.now()
+      var file = fs.createWriteStream(tmpDir +'/' + id);
+
+      file.on('error',function(error){
+        console.log('Error ' + error);
+      });
+      file.on('finish',function(){
+        res.writeHead(200)
+        res.end();
+        console.log('Finished uploading from client server, millis taken: ' + (Date.now() - start));
+      });
+
+      req.pipe(file); // pipe the request to the file
+    });
   });
 }
 
 /**
  * General Helper Functions.
  */
+function getFileSizeString(bytes) {
+  return (bytes / (1024*1024)).toFixed(2) + "MB";
+}
+
 /*
 function getSelectedMonthStartDate() {
   if (Session.get("selectedMonth") != null) {

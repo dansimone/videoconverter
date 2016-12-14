@@ -54,6 +54,7 @@
         <h1 class="panel-title subtitle">Upload Videos</h1>
       </div>
     </div>
+    <input type="file" name="" class="myFileInput">
   </div>
 </template>
 
@@ -70,12 +71,14 @@
         <thead>
         <tr>
           <th>Name</th>
+          <th>Size</th>
         </tr>
         </thead>
         <tbody>
         {{#each videos}}
         <tr class="transaction-row" id="{{_id}}">
-          <td class="col-xs-12">{{name}}</td>
+          <td class="col-xs-10">{{name}}</td>
+          <td class="col-xs-2">{{originalSize}}</td>
         </tr>
         {{/each}}
         </tbody>
@@ -105,7 +108,7 @@
         {{#each videos}}
         <tr class="transaction-row" id="{{_id}}">
           <td class="col-xs-4">{{name}}</td>
-          <td class="col-xs-2">{{size}}</td>
+          <td class="col-xs-2">{{originalSize}}</td>
           <td class="col-xs-6">
             <div class="progress">
               <div class="progress-bar {{getProgressBarClass}}" role="progressbar" aria-valuemin="0"
@@ -134,7 +137,7 @@
         <thead>
         <tr>
           <th>Name</th>
-          <th>Initial Size</th>
+          <th>Original Size</th>
           <th>Final Size</th>
           <th>Download</th>
           <th>Delete</th>
@@ -144,7 +147,7 @@
         {{#each videos}}
         <tr class="transaction-row" id="{{_id}}">
           <td class="col-xs-4">{{name}}</td>
-          <td class="col-xs-2"></td>
+          <td class="col-xs-2">{{originalSize}}</td>
           <td class="col-xs-2"></td>
           <td class="col-xs-2"></td>
           <td class="col-xs-2"></td>
