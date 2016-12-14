@@ -1,4 +1,4 @@
-Players = new Mongo.Collection("players");
+Videos = new Mongo.Collection("videos");
 Categories = new Mongo.Collection("categories");
 Transactions = new Mongo.Collection("transactions");
 
@@ -13,166 +13,43 @@ if (Meteor.isClient) {
     }
   });
   Template.main.events({
-    // Clicking the Change Password tab
-    "click a.changepassword": function (event, template) {
-      event.preventDefault();
-      $("#changePasswordModal").modal("show");
-    },
-    // Submitting the Change Password form
-    'submit form.change-password': function () {
-      event.preventDefault();
-      var changePasswordForm = $(event.currentTarget);
-      var oldPassword = changePasswordForm.find('.oldpassword').val();
-      var newPassword = changePasswordForm.find('.newpassword').val();
-      var confirmNewPassword = changePasswordForm.find('.confirmnewpassword').val();
+  });
 
-      // In case of error, highlight the offending fields
-      var error = false;
-      if (oldPassword.length == 0) {
-        Session.set("formError-changepassword-oldpassword", true);
-        error = true;
-      }
-      else {
-        Session.set("formError-changepassword-oldpassword", false);
-      }
-      if (newPassword.length == 0) {
-        Session.set("formError-changepassword-newpassword", true);
-        error = true;
-      }
-      else {
-        Session.set("formError-changepassword-newpassword", false);
-      }
-      if (confirmNewPassword.length == 0) {
-        Session.set("formError-changepassword-confirmnewpassword", true);
-        error = true;
-      }
-      else {
-        Session.set("formError-changepassword-confirmnewpassword", false);
-      }
-      if (newPassword != confirmNewPassword) {
-        Session.set("formError-changepassword-newpassword", true);
-        Session.set("formError-changepassword-confirmnewpassword", true);
-        error = true;
-      }
-
-      // Return control if any form errors found
-      if (error) {
-        return;
-      }
-
-      // Now, actually change the password
-      Session.set("formError-changepassword-oldpassword", false);
-      Session.set("formError-changepassword-newpassword", false);
-      Session.set("formError-changepassword-confirmnewpassword", false);
-
-      Accounts.changePassword(oldPassword, newPassword, function (error) {
-        // For now, we'll consider any failure at this point due to an incorrect
-        // old password
-        if (error != null) {
-          Session.set("formError-changepassword-oldpassword", true);
-        }
-        else {
-          $("#changePasswordModal").modal("hide");
-          changePasswordForm.find('.oldpassword').val("");
-          changePasswordForm.find('.newpassword').val("");
-          changePasswordForm.find('.confirmnewpassword').val("");
-        }
-      });
-    },
-    // Selecting the old password field, when its already shown in error
-    'click .form-group.has-error input.oldpassword': function (event) {
-      Session.set("formError-" + event.target.closest('.form-group').getAttribute("name"), false);
-    },
-    // Anything typed into the newpassword or confirmnewpassword fields
-    'keyup .form-group input': function (event) {
-      var changePasswordForm = $(event.currentTarget).closest('form');
-      var newPassword = changePasswordForm.find('.newpassword').val();
-      var confirmNewPassword = changePasswordForm.find('.confirmnewpassword').val();
-
-      // Show both new and confirm password fields in error if the current values don't match
-      if (newPassword != confirmNewPassword) {
-        Session.set("formError-changepassword-newpassword", true);
-        Session.set("formError-changepassword-confirmnewpassword", true);
-      }
-      else {
-        Session.set("formError-changepassword-newpassword", false);
-        Session.set("formError-changepassword-confirmnewpassword", false);
-      }
+  /**
+   * Pending Videos Helpers
+   */
+  Template.pending.helpers({
+    videos: function () {
+      return Videos.find({status: "PENDING"}/*,{sort: Session.get('txnSortField')}*/);
     }
   });
 
   /**
-   * Month Selector Helpers
+   * In Progress Videos Helpers
    */
-  Template.monthselection.helpers({
-    getCurrentMonth: function () {
-      var monthStartDate = getSelectedMonthStartDate();
-      var month = monthStartDate.getMonth() + 1;
-      month = month < 10 ? '0' + month : '' + month;
-      return monthStartDate.getFullYear() + "-" + month;
-    }
-  });
-  Template.monthselection.events({
-    'change .month-select': function () {
-      var date = new Date(event.target.value + "-01 PDT");
-      console.log("Selected Date: " + date);
-      Session.set("selectedMonth", date);
-    }
-  });
-
-  /**
-   * Transactions List Helpers
-   */
-  Template.transactionslist.helpers({
-    transactions: function () {
-      var monthStartDate = getSelectedMonthStartDate();
-      var firstDay = new Date(monthStartDate.getFullYear(), monthStartDate.getMonth(), 1);
-      var lastDay = new Date(monthStartDate.getFullYear(), monthStartDate.getMonth() + 1, 1);
-      if (Session.get('txnSortField') == null) {
-        Session.set('txnSortField', {date: -1});
-      }
-      return Transactions.find(
-        {
-          date: {
-            $gte: firstDay,
-            $lt: lastDay
-          }
-        }, {sort: Session.get('txnSortField')});
+  Template.inprogress.helpers({
+    videos: function () {
+      return Videos.find({status: "IN_PROGRESS"}/*,{sort: Session.get('txnSortField')}*/);
     },
+    getPercentComplete: function () {
+      return this.percentComplete;
+    }
+    /*
     getAmount: function () {
       return Math.abs(this.amount).toFixed(2);
-    },
-    categories: function () {
-      return Categories.find();
-    },
-    getFormattedDate: function () {
-      return this.date.getMonth() + 1 + "/" + this.date.getDate() + "/" + this.date.getFullYear();
-    },
-    isAddingTransaction: function () {
-      return Session.get("adding_transaction");
-    },
-    isWithdrawal: function () {
-      if (Session.get("adding_transaction_withdrawal") == null) {
-        return true;
-      }
-      else {
-        return Session.get("adding_transaction_withdrawal");
-      }
-    },
-    getErrorClass: function (fieldName) {
-      return getErrorClass(fieldName);
-    },
-    getTodaysDateFormatted: function () {
-      var today = new Date();
-      var month = today.getMonth() + 1;
-      month = month < 10 ? '0' + month : '' + month;
-      var day = today.getDate();
-      day = day < 10 ? '0' + day : '' + day;
-      var dateFormatted = today.getFullYear() + "-" + month + "-" + day;
-      //console.log("OKOKKO" + dateFormatted);
-      return dateFormatted;
+    }*/
+  });
+
+  /**
+   * Completed Videos Helpers
+   */
+  Template.completed.helpers({
+    videos: function () {
+      return Videos.find({status: "COMPLETED"}/*,{sort: Session.get('txnSortField')}*/);
     }
   });
+
+  /*
   Template.transactionslist.events(
     {
       // Clicking Add Transaction button
@@ -276,53 +153,15 @@ if (Meteor.isClient) {
           sortOrder = Session.get('txnSortField').amount * -1;
         }
         Session.set('txnSortField', {amount: sortOrder, date: -1});
-      },
-      // Clicking any amount in the Transaction table
-      'click tr.transaction-row td span.transaction-amount': function () {
-        // A little logic to make the amount temporarily editable
-        var cell = $(event.target);
-        var currentAmount = cell.text();
-        cell.text("");
-        var txnId = cell.closest('tr').attr("id");
-        $('<input />').appendTo(cell).val(currentAmount).select().on("blur keyup",
-          function (event) {
-            // Ignore anything that is a key press but *not* an enter
-            if (event.keyCode != null && event.keyCode != 13) {
-              return;
-            }
-            // Restore value if not a number
-            var newAmount;
-            if (isNaN($(this).val())) {
-              newAmount = currentAmount;
-            }
-            else {
-              newAmount = parseFloat($(this).val()).toFixed(2);
-            }
-            cell.find("input").remove();
-            if (newAmount != currentAmount) {
-              cell.text("");
-              Transactions.update({_id: txnId}, {$set: {amount: parseFloat(newAmount)}});
-            }
-            else {
-              cell.text(newAmount);
-            }
-          });
-      },
-      // Clicking on the remove button for a row in the Transaction table
-      'click tr.transaction-row td a.transaction-remove': function () {
-        event.preventDefault();
-        var cell = $(event.target);
-        var txnId = cell.closest('tr').attr("id");
-        if (confirm("Are you sure you want to delete this transaction?") == true) {
-          Transactions.remove(txnId);
-        }
       }
     }
   );
+  */
 
   /**
    * Categories List Helpers
    */
+  /*
   Template.categorieslist.helpers({
     categories: function () {
       return Categories.find({}, {sort: {_id: 1}});
@@ -337,13 +176,7 @@ if (Meteor.isClient) {
       var monthStartDate = getSelectedMonthStartDate();
       return getAmountUsedForMonth(this, monthStartDate).toFixed(2);
     },
-    getPercentUsed: function () {
-      var monthStartDate = getSelectedMonthStartDate();
-      var amountUsed = getAmountUsedForMonth(this, monthStartDate);
-      var percentUsed = Math.round(amountUsed / this.amount * 100);
-      //console.log("Percent Used: " + percentUsed);
-      return percentUsed;
-    },
+
     getProgressBarClass: function () {
       var monthStartDate = getSelectedMonthStartDate();
       var amountUsed = getAmountUsedForMonth(this, monthStartDate);
@@ -361,6 +194,9 @@ if (Meteor.isClient) {
       return getErrorClass(fieldName);
     }
   });
+  */
+
+  /*
   Template.categorieslist.events(
     {
       // Clicking the Add Category button
@@ -459,55 +295,60 @@ if (Meteor.isClient) {
       }
     }
   );
+  */
 }
 
 // On server startup, seed some sample data, if the DB is empty.
 if (Meteor.isServer) {
   Meteor.startup(function () {
 
-    // Add sample transactions
-    if (Transactions.find().count() === 0) {
-      var transactions = JSON.parse(Assets.getText("transactions.json"));
-      _.each(transactions, function (transaction) {
-
-        // Give the transaction a random date over the last 6 days
-        var randomDate = new Date();
-        randomDate.setDate(randomDate.getDate() - Math.floor(Math.random() * 6));
-
-        Transactions.insert(
-          {
-            category_id: transaction.category_id,
-            comments: transaction.comments,
-            date: randomDate,
-            type: transaction.type.toLowerCase(),
-            amount: transaction.amount
-          }
-        );
-      })
-    }
-    // Add sample categories
-    if (Categories.find().count() === 0) {
-      var categories = JSON.parse(Assets.getText("categories.json"));
-      _.each(categories, function (category) {
-        Categories.insert({
-          _id: category._id,
-          amount: Math.abs(category.amount)
+    // REST API configuration
+    var Api = new Restivus({
+      useDefaultAuth: true,
+      prettyJson: true
+    });
+    //Api.addCollection(Videos);
+    Api.addRoute('videos', {authRequired: false}, {
+      get: function () {
+        return Videos.find({}).fetch();
+      },
+      post: function () {
+        if (this.bodyParams.name == null) {
+          return {statusCode: 400, message: 'Name not provided'}
+        }
+        // Insert the new video
+        Videos.insert({
+          name: this.bodyParams.name,
+          status: "PENDING",
+          percentComplete: 0
         });
-      })
-    }
-    // Add default (one, for now) user
-    if (Meteor.users.find().count() === 0) {
-      var users = JSON.parse(Assets.getText("users.json"));
-      _.each(users, function (user) {
-        Meteor.users.insert(user);
-      })
-    }
+        return {statusCode: 200};
+      }
+    });
+    Api.addRoute('videos/:id', {authRequired: false}, {
+      get: function () {
+        return Videos.findOne(this.urlParams.id);
+      },
+      put: function () {
+        video = Videos.findOne(this.urlParams.id);
+        if(video == null) {
+          return {statusCode: 404,  message: 'Video not found'}
+        }
+        s = this.bodyParams.status != null ? this.bodyParams.status : video.status;
+        p = this.bodyParams.percentComplete != null ? this.bodyParams.percentComplete : video.percentComplete;
+
+        console.log("Updating with status: " + s + " " +  p);
+        Videos.update({_id: video._id}, {$set: {status: s, percentComplete: p}});
+        return {statusCode: 200};
+        }
+    });
   });
 }
 
 /**
  * General Helper Functions.
  */
+/*
 function getSelectedMonthStartDate() {
   if (Session.get("selectedMonth") != null) {
     return Session.get("selectedMonth");
@@ -518,28 +359,6 @@ function getSelectedMonthStartDate() {
   }
 }
 
-/**
- * Adds up the total amount used for the given category in the given month.
- */
-function getAmountUsedForMonth(category, monthStartDate) {
-  var amountUsed = 0;
-  var firstDay = new Date(monthStartDate.getFullYear(), monthStartDate.getMonth(), 1);
-  var lastDay = new Date(monthStartDate.getFullYear(), monthStartDate.getMonth() + 1, 1);
-  txnsThisMonth = Transactions.find(
-    {
-      category_id: category._id,
-      date: {
-        $gte: firstDay,
-        $lt: lastDay
-      }
-    }
-  );
-  txnsThisMonth.forEach(function (txn) {
-    amountUsed -= txn.amount;
-  });
-  return amountUsed;
-}
-
 function getErrorClass(fieldName) {
   if (Session.get("formError-" + fieldName) != null && Session.get("formError-" + fieldName)) {
     return "has-error";
@@ -548,3 +367,4 @@ function getErrorClass(fieldName) {
     return "";
   }
 }
+*/
