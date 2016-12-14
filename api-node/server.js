@@ -38,7 +38,7 @@ app.post('/file', function (req, res) {
   }
   console.log("Converting file: " + fileName);
   var post = {
-    name: fileName, status: "NOT_STARTED", location: ""
+    name: fileName, status: "IN_PROGRESS", location: ""
   };
   connection.query('INSERT INTO FILES SET ?', post, function (err, result) {
     if (err) {
@@ -181,9 +181,40 @@ app.get('/file', function (req, res) {
           res.sendStatus(404);
         }
         else {
-          //
-          // Read the file on disk and wrote chunks to the processor request
-          //
+          res.send(JSON.stringify(rows[0]));
+        }
+      }
+    });
+  }
+})
+
+// Gets the list of all videos that haven't started yet
+app.get('/file/download', function (req, res) {
+  res.setHeader('Content-Type', 'application/json');
+
+  fileName = req.param('name')
+  if (fileName == null) {
+    res.status(500).send("No file name specified");
+    return;
+  }
+
+  connection.query('SELECT * FROM FILES WHERE name="' + fileName + '"', function (err, rows, fields) {
+    if (err) {
+      console.log("ERROR: " + err);
+      res.sendStatus(500);
+    }
+    else {
+      if (rows.length == 0) {
+        res.sendStatus(404);
+      }
+      else {
+        //
+        // Read the file on disk and wrote chunks to the processor request
+        //
+        if (rows[0].status != "COMPLETED") {
+          res.status(500).send('File conversion not yet completed');
+        }
+        else {
           location = rows[0].location;
           console.log("Sending video: " + location);
 
@@ -195,8 +226,8 @@ app.get('/file', function (req, res) {
           });
         }
       }
-    });
-  }
+    }
+  });
 })
 
 var server = app.listen(getValueOrDefault(process.env.PORT, 8080), function () {
