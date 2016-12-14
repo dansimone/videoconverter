@@ -14,6 +14,7 @@ RUN npm install tmp
 RUN mkdir -p /ffmpeg/bin
 COPY ffmpeg /ffmpeg/bin
 COPY ffprobe /ffmpeg/bin
+RUN chmod +x /ffmpeg/bin/*
 
 ENV PATH=/ffmpeg/bin:${PATH}
 
