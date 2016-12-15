@@ -6,6 +6,7 @@ var streamBuffers = require('stream-buffers');
 var randomstring = require("randomstring");
 var tmp = require('tmp');
 var http = require('http');
+var url = require('url');
 
 // Create temporary directory
 var tmpDir = tmp.dirSync().name;
@@ -95,9 +96,10 @@ function getValueOrDefault(value, defaultValue) {
 }
 
 function callbackUIInProgress(id, callbackUrl, percentComplete) {
+  var callBackLocation = url.parse(callbackUrl, true, true);
   var options = {
-    host: "localhost",
-    port: 3000,
+    host: callBackLocation.hostname,
+    port: callBackLocation.port,
     path: "/api/videos/" + id + "?status=IN_PROGRESS&percentComplete=" + percentComplete,
     method: 'PUT'
   };
@@ -110,9 +112,10 @@ function callbackUIInProgress(id, callbackUrl, percentComplete) {
 }
 
 function callbackUICompleted(id, callbackUrl) {
+  var callBackLocation = url.parse(callbackUrl, true, true);
   var options = {
-    host: "localhost",
-    port: 3000,
+    host: callBackLocation.hostname,
+    port: callBackLocation.port,
     path: "/api/videos/" + id + "?status=COMPLETED",
     method: 'PUT'
   };

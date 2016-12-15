@@ -111,6 +111,8 @@ if (Meteor.isServer) {
     var http = Npm.require('http');
     var fs = Npm.require('fs');
     var tmp = Npm.require('tmp');
+    var processorHost = verifyEnvVar("PROCESSOR_HOST", process.env.PROCESSOR_HOST);
+    var processorPort = verifyEnvVar("PROCESSOR_PORT", process.env.PROCESSOR_PORT);
 
     // Create temporary directory
     var tmpDir = tmp.dirSync().name;
@@ -181,8 +183,8 @@ if (Meteor.isServer) {
         // Pass the file along to the processor
         //
         var options = {
-          host: "localhost",
-          port: 8080,
+          host: processorHost,
+          port: processorPort,
           path: '/convert?id=' + id + "&callbackUrl=" + localUrl,
           method: 'POST'
         };
