@@ -20,7 +20,7 @@
   * Scaled to 3 in the initial deployment.
  
 # Problems
-* Download links not fully implemented yet.
+* Download links are not *fully* working yet.  They currently rely on talking to the backend Processor nodes via the LB only.  And each Processor node (currently) knows about only the converted files that *it* converted (need to fix this).  So the download link will currently return a 404 whenever the LB doesn't load balance to correct Processor node.
 
 # Things that can be improved:
 * Download links not fully implemented yet.  Still need to make the callback from Processor service to UI service with the converted video.

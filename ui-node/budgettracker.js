@@ -91,6 +91,9 @@ if (Meteor.isClient) {
   Template.completed.helpers({
     videos: function () {
       return Videos.find({status: "COMPLETED"}/*,{sort: Session.get('txnSortField')}*/);
+    },
+    getDownloadLink: function () {
+      return Meteor.call('getDownloadLink', this.name, this._id);
     }
   });
 
@@ -209,6 +212,16 @@ if (Meteor.isServer) {
       });
 
       req.pipe(file); // pipe the request to the file
+    });
+
+    //
+    // Server side helper methods to be called from client side
+    //
+    Meteor.methods({
+      getDownloadLink: function (name, id) {
+        // Construct a return URL that has the name of the file in it with the mp4 extension
+        return "http://" + process.env.PROCESSOR_HOST + ":" + process.env.PROCESSOR_PORT + "/" + name + "%2Emp4?id=" + id;
+      }
     });
   });
 }

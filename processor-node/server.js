@@ -61,7 +61,7 @@ app.post('/convert', function (req, res) {
 // TODO - this is temporary hack until I can get the callback to the UI working, with the
 // data-binary.  That does *not* work easily with Meteor unfortunately.
 //
-app.get('/download', function (req, res) {
+app.get('/download/:name', function (req, res) {
   id = req.param('id')
   if (id == null) {
     res.status(400).send("No id specified");
