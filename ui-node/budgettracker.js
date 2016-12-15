@@ -39,6 +39,8 @@ if (Meteor.isClient) {
         xhr.open('POST', '/uploadToProcessor/' + videoId, true);
         xhr.onload = function(event){}
         xhr.send(file);
+
+        event.target.value = null;
       }
     }
   );
