@@ -337,6 +337,9 @@ if (Meteor.isServer) {
     var tmpDir = tmp.dirSync().name;
     console.log('Created tmp dir: ' + tmpDir);
 
+    var localUrl = Meteor.absoluteUrl();
+    console.log('Local URL is: ' + localUrl);
+
     // Configuration of REST API for Processor Node callbacks
     var Api = new Restivus({
       useDefaultAuth: true,
@@ -348,12 +351,12 @@ if (Meteor.isServer) {
         return Videos.find({}).fetch();
       },
       post: function () {
-        if (this.bodyParams.name == null) {
+        if (this.queryParams.name == null) {
           return {statusCode: 400, message: 'Name not provided'}
         }
         // Insert the new video
         Videos.insert({
-          name: this.bodyParams.name,
+          name: this.queryParams.name,
           status: "PENDING",
           percentComplete: 0
         });
@@ -369,8 +372,8 @@ if (Meteor.isServer) {
         if(video == null) {
           return {statusCode: 404,  message: 'Video not found'}
         }
-        s = this.bodyParams.status != null ? this.bodyParams.status : video.status;
-        p = this.bodyParams.percentComplete != null ? this.bodyParams.percentComplete : video.percentComplete;
+        s = this.queryParams.status != null ? this.queryParams.status : video.status;
+        p = this.queryParams.percentComplete != null ? this.queryParams.percentComplete : video.percentComplete;
 
         console.log("Updating with status: " + s + " " +  p);
         Videos.update({_id: video._id}, {$set: {status: s, percentComplete: p}});
@@ -384,7 +387,8 @@ if (Meteor.isServer) {
       id = parts[1];
       console.log('Uploading file ' + id + ' to Processor Node');
       var start = Date.now()
-      var file = fs.createWriteStream(tmpDir +'/' + id);
+      tmpFile = tmpDir +'/' + id;
+      var file = fs.createWriteStream(tmpFile);
 
       file.on('error',function(error){
         console.log('Error ' + error);
@@ -393,6 +397,29 @@ if (Meteor.isServer) {
         res.writeHead(200)
         res.end();
         console.log('Finished uploading from client server, millis taken: ' + (Date.now() - start));
+
+        //
+        // Pass the file along to the processor
+        //
+        var options = {
+          host: "localhost",
+          port: 8080,
+          path: '/convert?id=' + id + "&callbackUrl=" + localUrl,
+          method: 'POST'
+        };
+
+        var req = http.request(options, function (res) {
+          console.log('Processor request status: ' + res.statusCode);
+        });
+        // Read from the local file and stream to the processor node
+        var readStream = fs.createReadStream(tmpFile);
+        readStream.on('data', function (chunk) {
+          req.write(chunk);
+        }).on('end', function () {
+          req.end();
+          // Delete the tmp file - we don't need it anymore
+          fs.unlink(tmpFile);
+        });
       });
 
       req.pipe(file); // pipe the request to the file
@@ -427,3 +454,10 @@ function getErrorClass(fieldName) {
   }
 }
 */
+
+function verifyEnvVar(name, value) {
+  if (value == null) {
+    throw ('Environment variable ' + name + ' must be set');
+  }
+  return value;
+}
