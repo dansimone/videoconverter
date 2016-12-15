@@ -16,10 +16,11 @@ WORKDIR /ui-node
 COPY . /ui-node
 RUN rm -rf /ui-node/build
 
+RUN meteor reset
+
 ENV HTTP_PROXY ""
 ENV HTTPS_PROXY ""
 ENV http_proxy ""
 
-RUN meteor reset
 ENTRYPOINT ["meteor"]
 
