@@ -121,7 +121,9 @@ if (Meteor.isServer) {
     var localUrl = Meteor.absoluteUrl();
     console.log('Local URL is: ' + localUrl);
 
+    //
     // Configuration of REST API for Processor Node callbacks
+    //
     var Api = new Restivus({
       useDefaultAuth: true,
       prettyJson: true
@@ -155,14 +157,17 @@ if (Meteor.isServer) {
         }
         s = this.queryParams.status != null ? this.queryParams.status : video.status;
         p = this.queryParams.percentComplete != null ? this.queryParams.percentComplete : video.percentComplete;
+        si = this.queryParams.finalSize != null ? this.queryParams.finalSize : video.finalSize;
 
         console.log("Updating with status: " + s + " " +  p);
-        Videos.update({_id: video._id}, {$set: {status: s, percentComplete: p}});
+        Videos.update({_id: video._id}, {$set: {status: s, percentComplete: p, finalSize: si}});
         return {statusCode: 200};
         }
     });
 
+    //
     // Internal URL to send input files from client to server
+    //
     WebApp.connectHandlers.use('/uploadToProcessor',function(req,res){
       var parts = req.url.split("/");
       id = parts[1];

@@ -12,11 +12,22 @@ var url = require('url');
 var tmpDir = tmp.dirSync().name;
 console.log('Created tmp dir: ' + tmpDir);
 
+//
+// Starts server
+//
+var server = app.listen(getValueOrDefault(process.env.PORT, 8080), function () {
+  var host = server.address().address;
+  var port = server.address().port;
+  console.log("Example app listening at http://%s:%s", host, port);
+})
+
+//
 // Posts a video to convert
+//
 app.post('/convert', function (req, res) {
   id = req.param('id')
   if (id == null) {
-    res.status(500).send("No id specified");
+    res.status(400).send("No id specified");
     return;
   }
   callbackUrl = req.param('callbackUrl')
@@ -45,23 +56,38 @@ app.post('/convert', function (req, res) {
   });
 })
 
-// Gets the list of all videos that haven't started yet
-app.get('/jobs', function (req, res) {
-  res.setHeader('Content-Type', 'application/json');
-  res.sendStatus(200);
+//
+// Downloads a converted video
+// TODO - this is temporary hack until I can get the callback to the UI working, with the
+// data-binary.  That does *not* work easily with Meteor unfortunately.
+//
+app.get('/download', function (req, res) {
+  id = req.param('id')
+  if (id == null) {
+    res.status(400).send("No id specified");
+    res.end();
+    return;
+  }
+  convertedTmpFile = tmpDir + '/' + id + "-converted.mp4";
+  if (!fs.existsSync(convertedTmpFile)) {
+    res.status(404);
+    res.end();
+    return;
+  }
+
+  var readStream = fs.createReadStream(convertedTmpFile);
+  readStream.on('data', function (chunk) {
+    res.write(chunk);
+  }).on('end', function () {
+    res.end();
+  });
 })
 
-var server = app.listen(getValueOrDefault(process.env.PORT, 8080), function () {
-  var host = server.address().address;
-  var port = server.address().port;
-  console.log("Example app listening at http://%s:%s", host, port);
-})
-
+//
+// Main function to convert a video
+//
 function processVideo(localFile, id, callbackUrl) {
   convertedTmpFile = tmpDir + '/' + id + "-converted.mp4";
-  console.log("AAA " + convertedTmpFile);
-  console.log("BBB " + localFile);
-  console.log("CC " + preconvertedTmpFile);
   var proc = new Ffmpeg()
     .input(localFile)
     .addOption('-crf', 23)
@@ -85,23 +111,23 @@ function processVideo(localFile, id, callbackUrl) {
     })
     .on('end', function () {
       console.log('Done processing: ' + localFile);
-      callbackUICompleted(id, callbackUrl);
+      callbackUICompleted(id, callbackUrl, getFileSizeString(convertedTmpFile));
       fs.unlink(localFile);
+
       // TODO - sometimes this line doesn't work if the video is very small (the tmpFile
       // doesn't register as existing for some reason)
-      fs.unlink(convertedTmpFile,function(err){
-        if(err) {
-          console.log('Error deleting converted file, continuing...');
-        }
-      });
+      //fs.unlink(convertedTmpFile,function(err){
+      //  if(err) {
+      //    console.log('Error deleting converted file, continuing...');
+      //  }
+      //});
     })
     .saveToFile(convertedTmpFile);
 }
 
-function getValueOrDefault(value, defaultValue) {
-  return value != null ? value : defaultValue;
-}
-
+//
+// Calls back to UI with percent complete
+//
 function callbackUIInProgress(id, callbackUrl, percentComplete) {
   if(callbackUrl != null) {
     var callBackLocation = url.parse(callbackUrl, true, true);
@@ -120,13 +146,16 @@ function callbackUIInProgress(id, callbackUrl, percentComplete) {
   }
 }
 
-function callbackUICompleted(id, callbackUrl) {
+//
+// Call back to UI with completion message
+//
+function callbackUICompleted(id, callbackUrl, finalSize) {
   if(callbackUrl != null) {
     var callBackLocation = url.parse(callbackUrl, true, true);
     var options = {
       host: callBackLocation.hostname,
       port: callBackLocation.port,
-      path: "/api/videos/" + id + "?status=COMPLETED",
+      path: "/api/videos/" + id + "?status=COMPLETED&finalSize=" + finalSize,
       method: 'PUT'
     };
     var req = http.request(options, function (res) {
@@ -136,4 +165,14 @@ function callbackUICompleted(id, callbackUrl) {
       });
     }).end();
   }
+}
+
+function getValueOrDefault(value, defaultValue) {
+  return value != null ? value : defaultValue;
+}
+
+function getFileSizeString(filename) {
+  var stats = fs.statSync(filename)
+  var bytes = stats["size"]
+  return (bytes / (1024*1024)).toFixed(2) + "MB";
 }
