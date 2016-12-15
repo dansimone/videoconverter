@@ -32,7 +32,8 @@ if (Meteor.isClient) {
           name: file.name,
           originalSize: 0, //getFileSizeString(fileObj.size()),
           status: "PENDING",
-          percentComplete: 0
+          percentComplete: 0,
+          originalSize: getFileSizeString(file.size)
         });
 
         var xhr = new XMLHttpRequest();
