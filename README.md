@@ -21,9 +21,6 @@
  
 # Problems
 * Download links not fully implemented yet.
-* Parallel uploads by the same Processor node crash the node.  So if you upload a 2nd file while another conversion
-is in process *and* it gets routed to the same Process node, that node will crash, and its conversions will be
-orphaned. Bugs
 
 # Things that can be improved:
 * Download links not fully implemented yet.  Still need to make the callback from Processor service to UI service with the converted video.
@@ -53,6 +50,7 @@ orphaned. Bugs
 
     # Build Docker image
     cd processor-node
+    meteor npm install tmp
     meteor # Need to have meteor installed locally
     docker build -t gcr.io/$PROJECT_ID/ui-node:0.5
     # Push image

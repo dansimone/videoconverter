@@ -59,8 +59,11 @@ var server = app.listen(getValueOrDefault(process.env.PORT, 8080), function () {
 
 function processVideo(localFile, id, callbackUrl) {
   convertedTmpFile = tmpDir + '/' + id + "-converted.mp4";
+  console.log("AAA " + convertedTmpFile);
+  console.log("BBB " + localFile);
+  console.log("CC " + preconvertedTmpFile);
   var proc = new Ffmpeg()
-    .input(preconvertedTmpFile)
+    .input(localFile)
     .addOption('-crf', 23)
     .addOption('-c:v', 'libx264')
     .addOption('-preset veryfast')
@@ -72,7 +75,7 @@ function processVideo(localFile, id, callbackUrl) {
       console.log('**** SPAWN : ' + commandLine);
     })
     .on('progress', function (progress) {
-      console.log('Processing ' + preconvertedTmpFile + ' ' + progress.percent + '% done');
+      console.log('Processing ' + localFile + ' ' + progress.percent + '% done');
       callbackUIInProgress(id, callbackUrl, Math.round(progress.percent));
     })
     .on('error', function (err, stdout, stderr) {
@@ -81,12 +84,16 @@ function processVideo(localFile, id, callbackUrl) {
       // TODO - some kind of error handling here
     })
     .on('end', function () {
-      console.log('Done processing: ' + preconvertedTmpFile);
+      console.log('Done processing: ' + localFile);
       callbackUICompleted(id, callbackUrl);
-      fs.unlink(preconvertedTmpFile);
+      fs.unlink(localFile);
       // TODO - sometimes this line doesn't work if the video is very small (the tmpFile
       // doesn't register as existing for some reason)
-      fs.unlink(convertedTmpFile);
+      fs.unlink(convertedTmpFile,function(err){
+        if(err) {
+          console.log('Error deleting converted file, continuing...');
+        }
+      });
     })
     .saveToFile(convertedTmpFile);
 }
@@ -96,33 +103,37 @@ function getValueOrDefault(value, defaultValue) {
 }
 
 function callbackUIInProgress(id, callbackUrl, percentComplete) {
-  var callBackLocation = url.parse(callbackUrl, true, true);
-  var options = {
-    host: callBackLocation.hostname,
-    port: callBackLocation.port,
-    path: "/api/videos/" + id + "?status=IN_PROGRESS&percentComplete=" + percentComplete,
-    method: 'PUT'
-  };
-  var req = http.request(options, function (res) {
-    console.log('Callback status: ' + res.statusCode + " " + res.body);
-    res.on('error', function (e) {
-      console.log("ERROR: " + e.message);
-    });
-  }).end();
+  if(callbackUrl != null) {
+    var callBackLocation = url.parse(callbackUrl, true, true);
+    var options = {
+      host: callBackLocation.hostname,
+      port: callBackLocation.port,
+      path: "/api/videos/" + id + "?status=IN_PROGRESS&percentComplete=" + percentComplete,
+      method: 'PUT'
+    };
+    var req = http.request(options, function (res) {
+      console.log('Callback status: ' + res.statusCode + " " + res.body);
+      res.on('error', function (e) {
+        console.log("ERROR: " + e.message);
+      });
+    }).end();
+  }
 }
 
 function callbackUICompleted(id, callbackUrl) {
-  var callBackLocation = url.parse(callbackUrl, true, true);
-  var options = {
-    host: callBackLocation.hostname,
-    port: callBackLocation.port,
-    path: "/api/videos/" + id + "?status=COMPLETED",
-    method: 'PUT'
-  };
-  var req = http.request(options, function (res) {
-    console.log('Callback status: ' + res.statusCode + " " + res.body);
-    res.on('error', function (e) {
-      console.log("ERROR: " + e.message);
-    });
-  }).end();
+  if(callbackUrl != null) {
+    var callBackLocation = url.parse(callbackUrl, true, true);
+    var options = {
+      host: callBackLocation.hostname,
+      port: callBackLocation.port,
+      path: "/api/videos/" + id + "?status=COMPLETED",
+      method: 'PUT'
+    };
+    var req = http.request(options, function (res) {
+      console.log('Callback status: ' + res.statusCode + " " + res.body);
+      res.on('error', function (e) {
+        console.log("ERROR: " + e.message);
+      });
+    }).end();
+  }
 }
