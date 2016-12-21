@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html ng-app="phonecatApp">
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.min.js"></script>
+<script src="app.js"></script>
+<body ng-controller="PhoneListController">
+
+<table border="1">
+  <tr><th>Row number</th><th>Row number</th></tr>
+  <tr ng-repeat="phone in phones">
+    <td>{{phone.name}}</td>
+    <td>{{phone.snippet}}</td>
+  </tr>
+</table>
+
+<ul>
+  <li ng-repeat="phone in phones">
+    <span>{{phone.name}}</span>
+    <p>{{phone.snippet}}</p>
+  </li>
+  <p>{{name}}</p>
+</ul>
+
+</body>
+</html>
