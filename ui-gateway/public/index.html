@@ -1,24 +1,164 @@
 <!DOCTYPE html>
 <html ng-app="phonecatApp">
-<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.min.js"></script>
-<script src="app.js"></script>
-<body ng-controller="PhoneListController">
 
-<table border="1">
-  <tr><th>Row number</th><th>Row number</th></tr>
-  <tr ng-repeat="phone in phones">
-    <td>{{phone.name}}</td>
-    <td>{{phone.snippet}}</td>
-  </tr>
-</table>
+<head>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"/>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.min.js"></script>
+  <script src="app.js"></script>
+  <link rel="stylesheet" href="ui-gateway.css">
+</head>
 
-<ul>
-  <li ng-repeat="phone in phones">
-    <span>{{phone.name}}</span>
-    <p>{{phone.snippet}}</p>
-  </li>
-  <p>{{name}}</p>
-</ul>
+<body ng-controller="VideoListController" data-ng-init="init()" ng-cloak>
 
+<button ng-click="refreshVideoStatuses()">Get All Data</button>
+
+<div class="navbar navbar-inverse navbar-default navbar-static-top">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="#">Video Converter</a>
+    </div>
+    <div class="collapse navbar-collapse">
+      <ul class="nav navbar-nav">
+        <li><a href="#upload">Upload</a></li>
+        <li><a href="#pending">Pending</a></li>
+        <li><a href="#inprogress">In Progress</a></li>
+        <li><a href="#completed">Completed</a></li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-sm-offset-2 col-sm-8">
+      <div class="text-center">
+        <h1 class="title">Video Converter</h1>
+      </div>
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <div class="panel-title-advanced clearfix">
+            <h1 class="panel-title subtitle">Upload Videos</h1>
+          </div>
+        </div>
+        <div class="text-center">
+          <label class="btn btn-primary">
+            Upload Video <input type="file" class="myFileInput" style="display: none;">
+          </label>
+        </div>
+      </div>
+
+      <div id="pending" class="panel panel-default">
+        <div class="panel-heading">
+          <div class="panel-title-advanced clearfix">
+            <h1 class="panel-title subtitle">Conversions Pending</h1>
+          </div>
+        </div>
+        <div class="panel-body">
+          <table class="sortable table table-bordered table-striped table-hover table-condensed">
+            <thead>
+            <tr>
+              <th>Name</th>
+              <th>Size</th>
+              <th>Cancel</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr class="video-row" ng-repeat="video in getPendingVideos()" id="{{video.id}}">
+              <td class="col-xs-10">{{video.name}}</td>
+              <td class="col-xs-2">{{video.originalSize}}</td>
+              <td class="col-xs-2 text-center">
+                <a href="#" class="btn btn-danger btn-xs video-remove" role="button">
+                  <i class="glyphicon glyphicon-remove"></i>
+                </a>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="inprogress" class="panel panel-default">
+        <div class="panel-heading">
+          <div class="panel-title-advanced clearfix">
+            <h1 class="panel-title subtitle">Conversions In Progress</h1>
+          </div>
+        </div>
+        <div class="panel-body">
+          <table class="sortable table table-bordered table-striped table-hover table-condensed">
+            <thead>
+            <tr>
+              <th>Name</th>
+              <th>Size</th>
+              <th>Progress</th>
+              <th>Cancel</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr class="video-row" ng-repeat="video in getInProgressVideos()" id="{{video.id}}">
+              <td class="col-xs-2">{{video.name}}</td>
+              <td class="col-xs-2">{{video.originalSize}}</td>
+              <td class="col-xs-6">
+                <div class="progress">
+                  <div class="progress-bar {{getProgressBarClass}}" role="progressbar" aria-valuemin="0"
+                       aria-valuemax="100" style="min-width: 3em; width:{{video.percentComplete}}%">
+                  </div>
+                </div>
+              </td>
+              <td class="col-xs-2 text-center">
+                <a href="#" class="btn btn-danger btn-xs video-remove" role="button">
+                  <i class="glyphicon glyphicon-remove"></i>
+                </a>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="completed" class="panel panel-default">
+        <div class="panel-heading">
+          <div class="panel-title-advanced clearfix">
+            <h1 class="panel-title subtitle">Conversions Completed</h1>
+          </div>
+        </div>
+        <div class="panel-body">
+          <table class="sortable table table-bordered table-striped table-hover table-condensed">
+            <thead>
+            <tr>
+              <th>Name</th>
+              <th>Original Size</th>
+              <th>Final Size</th>
+              <th>Download</th>
+              <th>Delete</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr class="video-row" ng-repeat="video in getCompletedVideos()" id="{{video.id}}">
+              <td class="col-xs-2">{{video.name}}</td>
+              <td class="col-xs-2">{{video.originalSize}}</td>
+              <td class="col-xs-2">{{video.finalSize}}</td>
+              <td class="col-xs-2">
+                <a href="{{video.getDownloadLink}}">Here</a>
+              </td>
+              <td class="col-xs-2 text-center">
+                <a href="#" class="btn btn-danger btn-xs video-remove" role="button">
+                  <i class="glyphicon glyphicon-remove"></i>
+                </a>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+    </div>
 </body>
 </html>
