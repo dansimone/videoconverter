@@ -12,6 +12,9 @@
 
 <body ng-controller="VideoListController" data-ng-init="init()" ng-cloak>
 
+<input type="file" file-model="myFile"/>
+<button ng-click="uploadFile()">upload me</button>
+
 <button ng-click="refreshVideoStatuses()">Get All Data</button>
 
 <div class="navbar navbar-inverse navbar-default navbar-static-top">
