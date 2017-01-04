@@ -63,34 +63,36 @@
               <label><strong>Drag files here</strong></label>
             </div>
           </div>
-          <table class="sortable table table-bordered table-striped table-hover table-condensed">
-            <thead>
-            <tr>
-              <th>Name</th>
-              <th ng-show="uploader.isHTML5">Size</th>
-              <th ng-show="uploader.isHTML5">Progress</th>
-              <th>Actions</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr ng-repeat="item in uploader.queue">
-              <td class="col-xs-2">{{ item.file.name }}</td>
-              <td class="col-xs-2" ng-show="uploader.isHTML5" nowrap>{{ item.file.size/1024/1024|number:2 }} MB</td>
-              <td class="col-xs-6" ng-show="uploader.isHTML5">
-                <div class="progress" style="margin-bottom: 0;">
-                  <div class="progress-bar" role="progressbar" ng-style="{ 'width': item.progress + '%' }"></div>
-                </div>
-                <span ng-show="item.isError"><i class="glyphicon glyphicon-remove"></i></span>
-              </td>
-              <td class="col-xs-2">
-                <button type="button" class="btn btn-warning btn-xs" ng-click="item.cancel()"
-                        ng-disabled="!item.isUploading">
-                  <span class="glyphicon glyphicon-ban-circle"></span> Cancel
-                </button>
-              </td>
-            </tr>
-            </tbody>
-          </table>
+          <div ng-show="!uploadQueueEmpty()">
+            <table class="sortable table table-bordered table-striped table-hover table-condensed">
+              <thead>
+              <tr>
+                <th>Name</th>
+                <th ng-show="uploader.isHTML5">Size</th>
+                <th ng-show="uploader.isHTML5">Progress</th>
+                <th>Actions</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr ng-repeat="item in uploader.queue">
+                <td class="col-xs-2">{{ item.file.name }}</td>
+                <td class="col-xs-2" ng-show="uploader.isHTML5" nowrap>{{ item.file.size/1024/1024|number:2 }}MB</td>
+                <td class="col-xs-6" ng-show="uploader.isHTML5">
+                  <div class="progress" style="margin-bottom: 0;">
+                    <div class="progress-bar" role="progressbar" ng-style="{ 'width': item.progress + '%' }"></div>
+                  </div>
+                  <span ng-show="item.isError"><i class="glyphicon glyphicon-remove"></i></span>
+                </td>
+                <td class="col-xs-2">
+                  <button type="button" class="btn btn-warning btn-xs" ng-click="item.cancel()"
+                          ng-disabled="!item.isUploading">
+                    <span class="glyphicon glyphicon-ban-circle"></span> Cancel
+                  </button>
+                </td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
