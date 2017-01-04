@@ -67,6 +67,7 @@ app.controller('AppController', ['$scope', '$http', 'FileUploader', function ($s
   };
   uploader.onAfterAddingAll = function (addedFileItems) {
     console.info('onAfterAddingAll', addedFileItems);
+    uploader.uploadAll();
   };
   uploader.onBeforeUploadItem = function (item) {
     console.info('onBeforeUploadItem', item);

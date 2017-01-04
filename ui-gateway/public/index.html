@@ -2,7 +2,7 @@
 <html id="ng-app" ng-app="app">
 
 <head>
-  <title>Simple example</title>
+  <title>Video Converter</title>
   <script src="jquery/jquery-3.1.1.min.js"></script>
   <script src="bootstrap/js/bootstrap.min.js"></script>
   <link rel="stylesheet" href="bootstrap/css/bootstrap.min.css"/>
@@ -44,44 +44,12 @@
   </div>
 </div>
 
-
-<div class="row">
-
-  <div class="col-md-9" style="margin-bottom: 40px">
-    <h3>Upload queue</h3>
-    <p>Queue length: {{ uploader.queue.length }}</p>
-
-
-    <div>
-      <div>
-        Queue progress:
-        <div class="progress" style="">
-          <div class="progress-bar" role="progressbar" ng-style="{ 'width': uploader.progress + '%' }"></div>
-        </div>
-      </div>
-      <button type="button" class="btn btn-success btn-s" ng-click="uploader.uploadAll()"
-              ng-disabled="!uploader.getNotUploadedItems().length">
-        <span class="glyphicon glyphicon-upload"></span> Upload all
-      </button>
-      <button type="button" class="btn btn-warning btn-s" ng-click="uploader.cancelAll()"
-              ng-disabled="!uploader.isUploading">
-        <span class="glyphicon glyphicon-ban-circle"></span> Cancel all
-      </button>
-      <button type="button" class="btn btn-danger btn-s" ng-click="uploader.clearQueue()"
-              ng-disabled="!uploader.queue.length">
-        <span class="glyphicon glyphicon-trash"></span> Remove all
-      </button>
-    </div>
-  </div>
-</div>
-
 <div class="container">
   <div class="row">
     <div class="col-sm-offset-2 col-sm-8">
       <div class="text-center">
         <h1 class="title">Video Converter</h1>
       </div>
-
 
       <div id="fileupload" class="panel panel-default">
         <div class="panel-heading">
@@ -114,7 +82,7 @@
                 </div>
                 <span ng-show="item.isError"><i class="glyphicon glyphicon-remove"></i></span>
               </td>
-              <td class="col-xs-2" nowrap>
+              <td class="col-xs-2">
                 <button type="button" class="btn btn-warning btn-xs" ng-click="item.cancel()"
                         ng-disabled="!item.isUploading">
                   <span class="glyphicon glyphicon-ban-circle"></span> Cancel
@@ -125,25 +93,6 @@
           </table>
         </div>
       </div>
-
-
-      <!--
-            <div class="text-center">
-              <h1 class="title">Video Converter</h1>
-            </div>
-            <div class="panel panel-default">
-              <div class="panel-heading">
-                <div class="panel-title-advanced clearfix">
-                  <h1 class="panel-title subtitle">Upload Videos</h1>
-                </div>
-              </div>
-              <div class="text-center">
-                <label class="btn btn-primary">
-                  Upload Video <input type="file" class="myFileInput" style="display: none;">
-                </label>
-              </div>
-            </div>
-      -->
 
       <div id="pending" class="panel panel-default">
         <div class="panel-heading">
