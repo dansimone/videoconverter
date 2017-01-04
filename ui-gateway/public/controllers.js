@@ -2,17 +2,28 @@
 
 var app = angular.module('app', ['angularFileUpload']);
 
+/**
+ * Angular controller that handles:
+ * 1) File upload
+ */
 app.controller('AppController', ['$scope', '$http', 'FileUploader', function ($scope, $http, FileUploader) {
   $scope.name = 'world';
 
   $scope.videos = [];
 
   $scope.init = function () {
-    refreshVideoStatuses()
+    $scope.refreshVideoStatuses();
   };
 
   $scope.refreshVideoStatuses = function () {
-    refreshVideoStatuses()
+    $http.get('/videos')
+      .success(function (data, status, headers, config) {
+        $scope.videos = data;
+        //console.log("Video data: " + JSON.stringify(data));
+      })
+      .error(function (data, status, header, config) {
+        console.log();
+      });
   };
 
   $scope.getPendingVideos = function () {
