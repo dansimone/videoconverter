@@ -1,8 +1,14 @@
+/**
+ * Node JS server-side handling for ui-gateway frontend.
+ */
+
 var express = require('express');
 var app = express();
 var fs = require("fs");
-
+var randomstring = require("randomstring");
 app.use(express.static('./public'));
+
+STORAGE_DIR = verifyEnvVar("STORAGE_DIR", process.env.STORAGE_DIR);
 
 //
 // Starts server
@@ -13,7 +19,7 @@ var server = app.listen(getValueOrDefault(process.env.PORT, 8080), function () {
   console.log("Example app listening at http://%s:%s", host, port);
 })
 
-// Gets the list of all videos that haven't started yet
+// Gets the list of all videos and their statuses
 app.get('/videos', function (req, res) {
   res.setHeader('Content-Type', 'application/json');
 
@@ -53,30 +59,34 @@ app.get('/videos', function (req, res) {
 })
 
 //
-// Posts a video to convert
+// Accepts a raw video from the client side, writes it to disk, then forwards it on
+// for conversion.
 //
 app.post('/upload', function (req, res) {
-  console.log("Uploading video");
-  id = req.param('id')
-  if (id == null) {
-    res.status(400).send("No id specified");
+  name = req.param('name')
+  if (name == null) {
+    res.status(400).send("No name specified");
     return;
   }
-  console.log("Converting video " + id);
 
-  preconvertedTmpFile = "c:/tmp" + '/' + id;
+  // Save the raw file with a random id on disk
+  rawFile = STORAGE_DIR + '/' + randomstring.generate(15);
+  console.log("Saving " + name + " to disk as " + rawFile + "...");
   var size = 0;
-  var wstream = fs.createWriteStream(preconvertedTmpFile);
+  var wstream = fs.createWriteStream(rawFile);
   req.on('data', function (data) {
     size += data.length;
     wstream.write(data);
     //console.log('Got chunk: ' + data.length + ' total: ' + size);
   });
   req.on('end', function () {
-    console.log("total size = " + size);
+    console.log("Done uploading");
+    //console.log("total size = " + size);
     wstream.end();
     res.status(200);
     res.end();
+
+    // TODO - send video off for conversion
   });
 
   req.on('error', function (e) {
@@ -86,4 +96,11 @@ app.post('/upload', function (req, res) {
 
 function getValueOrDefault(value, defaultValue) {
   return value != null ? value : defaultValue;
+}
+
+function verifyEnvVar(name, value) {
+  if (value == null) {
+    throw ('Environment variable ' + name + ' must be set');
+  }
+  return value;
 }

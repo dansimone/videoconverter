@@ -19,8 +19,7 @@
   <link rel="stylesheet" href="style.css"/>
 </head>
 
-<!-- 1. nv-file-drop="" uploader="{Object}" options="{Object}" filters="{String}" -->
-<body ng-controller="AppController" nv-file-drop="" uploader="uploader" filters="queueLimit, customFilter" ,
+<body ng-controller="AppController" nv-file-drop="" uploader="uploader" filters="customFilter" ,
       data-ng-init="init()" ng-cloak>
 
 <div class="navbar navbar-inverse navbar-default navbar-static-top">
@@ -35,7 +34,7 @@
     </div>
     <div class="collapse navbar-collapse">
       <ul class="nav navbar-nav">
-        <li><a href="#upload">Upload</a></li>
+        <li><a href="#fileupload">Upload</a></li>
         <li><a href="#pending">Pending</a></li>
         <li><a href="#inprogress">In Progress</a></li>
         <li><a href="#completed">Completed</a></li>
