@@ -1,164 +1,151 @@
 <!DOCTYPE html>
-<html ng-app="phonecatApp">
+<html id="ng-app" ng-app="app"> <!-- id="ng-app" IE<8 -->
 
 <head>
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"/>
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.min.js"></script>
-  <script src="app.js"></script>
-  <link rel="stylesheet" href="ui-gateway.css">
+  <title>Simple example</title>
+  <link rel="stylesheet" href="bootstrap/css/bootstrap.min.css" />
+
+  <!-- Fix for old browsers -->
+  <script src="angular-file-upload/es5-shim.min.js"></script>
+  <script src="angular-file-upload/es5-sham.min.js"></script>
+  <script src="jquery/jquery-3.1.1.min.js"></script>
+  <script src="angular-file-upload/console-sham.js"></script>
+
+  <script src="bootstrap/js/bootstrap.min.js"></script>
+  <script src="angular/angular.min.js"></script>
+  <script src="angular-file-upload/angular-file-upload.min.js"></script>
+  <script src="controllers.js"></script>
+
+  <style>
+    .my-drop-zone { border: dotted 3px lightgray; }
+    .nv-file-over { border: dotted 3px red; } /* Default class applied to drop zones on over */
+    .another-file-over-class { border: dotted 3px green; }
+
+    html, body { height: 100%; }
+  </style>
+
 </head>
 
-<body ng-controller="VideoListController" data-ng-init="init()" ng-cloak>
+<!-- 1. nv-file-drop="" uploader="{Object}" options="{Object}" filters="{String}" -->
+<body ng-controller="AppController" nv-file-drop="" uploader="uploader" filters="queueLimit, customFilter">
 
-<button ng-click="refreshVideoStatuses()">Get All Data</button>
+<div class="container">
 
-<div class="navbar navbar-inverse navbar-default navbar-static-top">
-  <div class="container">
+  <div class="navbar navbar-default">
     <div class="navbar-header">
-      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-      </button>
-      <a class="navbar-brand" href="#">Video Converter</a>
+      <a class="navbar-brand" href="https://github.com/nervgh/angular-file-upload">Angular File Upload</a>
     </div>
-    <div class="collapse navbar-collapse">
+    <div class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
-        <li><a href="#upload">Upload</a></li>
-        <li><a href="#pending">Pending</a></li>
-        <li><a href="#inprogress">In Progress</a></li>
-        <li><a href="#completed">Completed</a></li>
+        <li class="active dropdown">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown">Demos <b class="caret"></b></a>
+          <ul class="dropdown-menu">
+            <li class="active"><a href="#">Simple example</a></li>
+            <li><a href="../image-preview">Uploads only images (with canvas preview)</a></li>
+            <li><a href="../without-bootstrap">Without bootstrap example</a></li>
+          </ul>
+        </li>
+        <li><a href="https://github.com/nervgh/angular-file-upload">View on Github</a></li>
+        <li><a href="https://raw.githubusercontent.com/nervgh/angular-file-upload/master/dist/angular-file-upload.min.js">Download</a></li>
       </ul>
     </div>
   </div>
+
+  <div class="row">
+
+    <div class="col-md-3">
+
+      <h3>Select files</h3>
+
+      <div ng-show="uploader.isHTML5">
+        <!-- 3. nv-file-over uploader="link" over-class="className" -->
+        <div class="well my-drop-zone" nv-file-over="" uploader="uploader">
+          Base drop zone
+        </div>
+
+        <!-- Example: nv-file-drop="" uploader="{Object}" options="{Object}" filters="{String}" -->
+        <div nv-file-drop="" uploader="uploader" options="{ url: '/foo' }">
+          <div nv-file-over="" uploader="uploader" over-class="another-file-over-class" class="well my-drop-zone">
+            Another drop zone with its own settings
+          </div>
+        </div>
+      </div>
+
+      <!-- Example: nv-file-select="" uploader="{Object}" options="{Object}" filters="{String}" -->
+      Multiple
+      <input type="file" nv-file-select="" uploader="uploader" multiple  /><br/>
+
+      Single
+      <input type="file" nv-file-select="" uploader="uploader" />
+    </div>
+
+    <div class="col-md-9" style="margin-bottom: 40px">
+
+      <h3>Upload queue</h3>
+      <p>Queue length: {{ uploader.queue.length }}</p>
+
+      <table class="table">
+        <thead>
+        <tr>
+          <th width="50%">Name</th>
+          <th ng-show="uploader.isHTML5">Size</th>
+          <th ng-show="uploader.isHTML5">Progress</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr ng-repeat="item in uploader.queue">
+          <td><strong>{{ item.file.name }}</strong></td>
+          <td ng-show="uploader.isHTML5" nowrap>{{ item.file.size/1024/1024|number:2 }} MB</td>
+          <td ng-show="uploader.isHTML5">
+            <div class="progress" style="margin-bottom: 0;">
+              <div class="progress-bar" role="progressbar" ng-style="{ 'width': item.progress + '%' }"></div>
+            </div>
+          </td>
+          <td class="text-center">
+            <span ng-show="item.isSuccess"><i class="glyphicon glyphicon-ok"></i></span>
+            <span ng-show="item.isCancel"><i class="glyphicon glyphicon-ban-circle"></i></span>
+            <span ng-show="item.isError"><i class="glyphicon glyphicon-remove"></i></span>
+          </td>
+          <td nowrap>
+            <button type="button" class="btn btn-success btn-xs" ng-click="item.upload()" ng-disabled="item.isReady || item.isUploading || item.isSuccess">
+              <span class="glyphicon glyphicon-upload"></span> Upload
+            </button>
+            <button type="button" class="btn btn-warning btn-xs" ng-click="item.cancel()" ng-disabled="!item.isUploading">
+              <span class="glyphicon glyphicon-ban-circle"></span> Cancel
+            </button>
+            <button type="button" class="btn btn-danger btn-xs" ng-click="item.remove()">
+              <span class="glyphicon glyphicon-trash"></span> Remove
+            </button>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+
+      <div>
+        <div>
+          Queue progress:
+          <div class="progress" style="">
+            <div class="progress-bar" role="progressbar" ng-style="{ 'width': uploader.progress + '%' }"></div>
+          </div>
+        </div>
+        <button type="button" class="btn btn-success btn-s" ng-click="uploader.uploadAll()" ng-disabled="!uploader.getNotUploadedItems().length">
+          <span class="glyphicon glyphicon-upload"></span> Upload all
+        </button>
+        <button type="button" class="btn btn-warning btn-s" ng-click="uploader.cancelAll()" ng-disabled="!uploader.isUploading">
+          <span class="glyphicon glyphicon-ban-circle"></span> Cancel all
+        </button>
+        <button type="button" class="btn btn-danger btn-s" ng-click="uploader.clearQueue()" ng-disabled="!uploader.queue.length">
+          <span class="glyphicon glyphicon-trash"></span> Remove all
+        </button>
+      </div>
+
+    </div>
+
+  </div>
+
 </div>
 
-<div class="container">
-  <div class="row">
-    <div class="col-sm-offset-2 col-sm-8">
-      <div class="text-center">
-        <h1 class="title">Video Converter</h1>
-      </div>
-      <div class="panel panel-default">
-        <div class="panel-heading">
-          <div class="panel-title-advanced clearfix">
-            <h1 class="panel-title subtitle">Upload Videos</h1>
-          </div>
-        </div>
-        <div class="text-center">
-          <label class="btn btn-primary">
-            Upload Video <input type="file" class="myFileInput" style="display: none;">
-          </label>
-        </div>
-      </div>
-
-      <div id="pending" class="panel panel-default">
-        <div class="panel-heading">
-          <div class="panel-title-advanced clearfix">
-            <h1 class="panel-title subtitle">Conversions Pending</h1>
-          </div>
-        </div>
-        <div class="panel-body">
-          <table class="sortable table table-bordered table-striped table-hover table-condensed">
-            <thead>
-            <tr>
-              <th>Name</th>
-              <th>Size</th>
-              <th>Cancel</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr class="video-row" ng-repeat="video in getPendingVideos()" id="{{video.id}}">
-              <td class="col-xs-10">{{video.name}}</td>
-              <td class="col-xs-2">{{video.originalSize}}</td>
-              <td class="col-xs-2 text-center">
-                <a href="#" class="btn btn-danger btn-xs video-remove" role="button">
-                  <i class="glyphicon glyphicon-remove"></i>
-                </a>
-              </td>
-            </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <div id="inprogress" class="panel panel-default">
-        <div class="panel-heading">
-          <div class="panel-title-advanced clearfix">
-            <h1 class="panel-title subtitle">Conversions In Progress</h1>
-          </div>
-        </div>
-        <div class="panel-body">
-          <table class="sortable table table-bordered table-striped table-hover table-condensed">
-            <thead>
-            <tr>
-              <th>Name</th>
-              <th>Size</th>
-              <th>Progress</th>
-              <th>Cancel</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr class="video-row" ng-repeat="video in getInProgressVideos()" id="{{video.id}}">
-              <td class="col-xs-2">{{video.name}}</td>
-              <td class="col-xs-2">{{video.originalSize}}</td>
-              <td class="col-xs-6">
-                <div class="progress">
-                  <div class="progress-bar {{getProgressBarClass}}" role="progressbar" aria-valuemin="0"
-                       aria-valuemax="100" style="min-width: 3em; width:{{video.percentComplete}}%">
-                  </div>
-                </div>
-              </td>
-              <td class="col-xs-2 text-center">
-                <a href="#" class="btn btn-danger btn-xs video-remove" role="button">
-                  <i class="glyphicon glyphicon-remove"></i>
-                </a>
-              </td>
-            </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <div id="completed" class="panel panel-default">
-        <div class="panel-heading">
-          <div class="panel-title-advanced clearfix">
-            <h1 class="panel-title subtitle">Conversions Completed</h1>
-          </div>
-        </div>
-        <div class="panel-body">
-          <table class="sortable table table-bordered table-striped table-hover table-condensed">
-            <thead>
-            <tr>
-              <th>Name</th>
-              <th>Original Size</th>
-              <th>Final Size</th>
-              <th>Download</th>
-              <th>Delete</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr class="video-row" ng-repeat="video in getCompletedVideos()" id="{{video.id}}">
-              <td class="col-xs-2">{{video.name}}</td>
-              <td class="col-xs-2">{{video.originalSize}}</td>
-              <td class="col-xs-2">{{video.finalSize}}</td>
-              <td class="col-xs-2">
-                <a href="{{video.getDownloadLink}}">Here</a>
-              </td>
-              <td class="col-xs-2 text-center">
-                <a href="#" class="btn btn-danger btn-xs video-remove" role="button">
-                  <i class="glyphicon glyphicon-remove"></i>
-                </a>
-              </td>
-            </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  </div>
-    </div>
 </body>
 </html>

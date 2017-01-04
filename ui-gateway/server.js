@@ -52,6 +52,38 @@ app.get('/videos', function (req, res) {
   res.send(JSON.stringify(videos));
 })
 
+//
+// Posts a video to convert
+//
+app.post('/upload', function (req, res) {
+  console.log("Uploading video");
+  id = req.param('id')
+  if (id == null) {
+    res.status(400).send("No id specified");
+    return;
+  }
+  console.log("Converting video " + id);
+
+  preconvertedTmpFile = "c:/tmp" + '/' + id;
+  var size = 0;
+  var wstream = fs.createWriteStream(preconvertedTmpFile);
+  req.on('data', function (data) {
+    size += data.length;
+    wstream.write(data);
+    //console.log('Got chunk: ' + data.length + ' total: ' + size);
+  });
+  req.on('end', function () {
+    console.log("total size = " + size);
+    wstream.end();
+    res.status(200);
+    res.end();
+  });
+
+  req.on('error', function (e) {
+    console.log("ERROR: " + e.message);
+  });
+})
+
 function getValueOrDefault(value, defaultValue) {
   return value != null ? value : defaultValue;
 }
