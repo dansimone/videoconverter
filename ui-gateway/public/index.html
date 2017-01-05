@@ -1,21 +1,26 @@
 <!DOCTYPE html>
-<html ng-app="phonecatApp">
+<html id="ng-app" ng-app="app">
 
 <head>
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"/>
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.min.js"></script>
-  <script src="app.js"></script>
-  <link rel="stylesheet" href="ui-gateway.css">
+  <title>Video Converter</title>
+  <script src="jquery/jquery-3.1.1.min.js"></script>
+  <script src="bootstrap/js/bootstrap.min.js"></script>
+  <link rel="stylesheet" href="bootstrap/css/bootstrap.min.css"/>
+  <script src="angular/angular.min.js"></script>
+  <script src="angular-file-upload/angular-file-upload.min.js"></script>
+
+  <!-- Angular file upload stuff -->
+  <script src="angular-file-upload/es5-shim.min.js"></script>
+  <script src="angular-file-upload/es5-sham.min.js"></script>
+  <script src="angular-file-upload/console-sham.js"></script>
+
+  <!-- Custom stuff -->
+  <script src="controllers.js"></script>
+  <link rel="stylesheet" href="style.css"/>
 </head>
 
-<body ng-controller="VideoListController" data-ng-init="init()" ng-cloak>
-
-<input type="file" file-model="myFile"/>
-<button ng-click="uploadFile()">upload me</button>
-
-<button ng-click="refreshVideoStatuses()">Get All Data</button>
+<body ng-controller="AppController" nv-file-drop="" uploader="uploader" filters="customFilter" ,
+      data-ng-init="init()" ng-cloak>
 
 <div class="navbar navbar-inverse navbar-default navbar-static-top">
   <div class="container">
@@ -29,7 +34,7 @@
     </div>
     <div class="collapse navbar-collapse">
       <ul class="nav navbar-nav">
-        <li><a href="#upload">Upload</a></li>
+        <li><a href="#fileupload">Upload</a></li>
         <li><a href="#pending">Pending</a></li>
         <li><a href="#inprogress">In Progress</a></li>
         <li><a href="#completed">Completed</a></li>
@@ -44,16 +49,49 @@
       <div class="text-center">
         <h1 class="title">Video Converter</h1>
       </div>
-      <div class="panel panel-default">
+
+      <div id="fileupload" class="panel panel-default">
         <div class="panel-heading">
           <div class="panel-title-advanced clearfix">
-            <h1 class="panel-title subtitle">Upload Videos</h1>
+            <h1 class="panel-title subtitle">Upload Files</h1>
           </div>
         </div>
-        <div class="text-center">
-          <label class="btn btn-primary">
-            Upload Video <input type="file" class="myFileInput" style="display: none;">
-          </label>
+        <div class="panel-body">
+          <div ng-show="uploader.isHTML5">
+            <div class="well my-drop-zone text-center" nv-file-over="" uploader="uploader">
+              <label><strong>Drag files here</strong></label>
+            </div>
+          </div>
+          <div ng-show="!uploadQueueEmpty()">
+            <table class="sortable table table-bordered table-striped table-hover table-condensed">
+              <thead>
+              <tr>
+                <th>Name</th>
+                <th ng-show="uploader.isHTML5">Size</th>
+                <th ng-show="uploader.isHTML5">Progress</th>
+                <th>Actions</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr ng-repeat="item in uploader.queue">
+                <td class="col-xs-2">{{ item.file.name }}</td>
+                <td class="col-xs-2" ng-show="uploader.isHTML5" nowrap>{{ item.file.size/1024/1024|number:2 }}MB</td>
+                <td class="col-xs-6" ng-show="uploader.isHTML5">
+                  <div class="progress" style="margin-bottom: 0;">
+                    <div class="progress-bar" role="progressbar" ng-style="{ 'width': item.progress + '%' }"></div>
+                  </div>
+                  <span ng-show="item.isError"><i class="glyphicon glyphicon-remove"></i></span>
+                </td>
+                <td class="col-xs-2">
+                  <button type="button" class="btn btn-warning btn-xs" ng-click="item.cancel()"
+                          ng-disabled="!item.isUploading">
+                    <span class="glyphicon glyphicon-ban-circle"></span> Cancel
+                  </button>
+                </td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
@@ -74,9 +112,9 @@
             </thead>
             <tbody>
             <tr class="video-row" ng-repeat="video in getPendingVideos()" id="{{video.id}}">
-              <td class="col-xs-10">{{video.name}}</td>
-              <td class="col-xs-2">{{video.originalSize}}</td>
-              <td class="col-xs-2 text-center">
+              <td class="col-xs-4">{{video.name}}</td>
+              <td class="col-xs-4">{{video.originalSize}}</td>
+              <td class="col-xs-4 text-center">
                 <a href="#" class="btn btn-danger btn-xs video-remove" role="button">
                   <i class="glyphicon glyphicon-remove"></i>
                 </a>
@@ -162,6 +200,8 @@
       </div>
     </div>
   </div>
-    </div>
+</div>
+
+
 </body>
 </html>
