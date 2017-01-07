@@ -12,6 +12,4 @@ RUN npm install
 COPY . /usr/src/app
 
 EXPOSE 8080
-CMD [ "npm", "start" ]
-
-EXPOSE 8080
+CMD node server.js
