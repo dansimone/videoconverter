@@ -8,9 +8,16 @@ WORKDIR /usr/src/app
 COPY package.json /usr/src/app/
 RUN npm install
 
+# Bundle ffmpeg
+RUN mkdir -p /ffmpeg/bin
+COPY ffmpeg /ffmpeg/bin
+COPY ffprobe /ffmpeg/bin
+RUN chmod +x /ffmpeg/bin/*
+
+ENV PATH=/ffmpeg/bin:${PATH}
+
 # Bundle app source
 COPY server.js /usr/src/app
-COPY public /usr/src/app
 
 EXPOSE 8080
 CMD node server.js

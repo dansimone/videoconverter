@@ -1,9 +1,5 @@
 {
-  "name": "node-todo",
-  "version": "0.0.1",
-  "description": "Simple todo application.",
   "main": "server.js",
-  "author": "Scotch",
   "dependencies": {
     "body-parser": "^1.4.3",
     "express": "^4.13.4",

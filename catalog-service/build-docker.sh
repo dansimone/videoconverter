@@ -5,4 +5,4 @@ PROJECT_VERSION="${PROJECT_VERSION:?Variable PROJECT_VERSION must be defined}"
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 docker build -f $SCRIPT_DIR/Dockerfile --build-arg http_proxy=$PROXY --build-arg https_proxy=$PROXY -t \
-  gcr.io/$PROJECT_ID/ui-gateway:$PROJECT_VERSION $SCRIPT_DIR
+  gcr.io/$PROJECT_ID/catalog-service:$PROJECT_VERSION $SCRIPT_DIR

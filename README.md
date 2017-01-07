@@ -59,3 +59,6 @@
     kubectl run ui-node --image=gcr.io/$PROJECT_ID/ui-node:0.5.5 --port=3000     --env=PROCESSOR_HOST=processor-node --env=PROCESSOR_PORT=8080
     # Expose external port
     kubectl expose deployment ui-node --type="LoadBalancer"
+
+kubectl create -f deployment.yaml --record
+kubectl delete -f deployment.yaml

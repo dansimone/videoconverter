@@ -10,7 +10,6 @@ RUN npm install
 
 # Bundle app source
 COPY server.js /usr/src/app
-COPY public /usr/src/app
 
 EXPOSE 8080
 CMD node server.js
